@@ -11,7 +11,7 @@
   <Target Name="BuildAndUpdateVersion">
     <MSBuild Projects="CalculatorService.sln" 
       Properties="OutputPath=$(OutputPath);Configuration=$(Configuration);" />
-    <TeamCitySetBuildNumber BuildNumber="$(Version)-${BranchName}" Condition="'$(TeamCity)' == 'true' AND '$(BranchName)' != ''"/>
+    <TeamCitySetBuildNumber BuildNumber="$(Version)-$(BranchName)" Condition="'$(TeamCity)' == 'true' AND '$(BranchName)' != ''"/>
     <TeamCitySetBuildNumber BuildNumber="$(Version)" Condition="'$(TeamCity)' == 'true' AND '$(BranchName)' == ''"/>
   </Target>
 </Project>
