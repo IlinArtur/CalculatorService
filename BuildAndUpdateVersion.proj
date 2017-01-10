@@ -1,0 +1,17 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="BuildAndUpdateVersion">
+  <PropertyGroup>
+    <Version>1.0.1.$(Build)</Version>
+    <TeamCity Condition="'$(TeamCity)' == ''">false</TeamCity>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <OutputPath Condition="'$(OutputPath)' == ''">bin\%Configuration%\</OutputPath>
+  </PropertyGroup>  
+  <PropertyGroup Condition="'$(BranchName)' == 'master'">
+    <BranchName><!--NoAdditionalTags--></BranchName>
+  </PropertyGroup>
+  <Target Name="BuildAndUpdateVersion">
+    <MSBuild Projects="CalculatorService.sln" 
+      Properties="OutputPath=$(OutputPath);Configuration=$(Configuration);" />
+    <TeamCitySetBuildNumber BuildNumber="$(Version)-${BranchName}" Condition="'$(TeamCity)' == 'true' AND '$(BranchName)' != ''"/>
+    <TeamCitySetBuildNumber BuildNumber="$(Version)" Condition="'$(TeamCity)' == 'true' AND '$(BranchName)' == ''"/>
+  </Target>
+</Project>

@@ -11,6 +11,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalculatorService", "Calcul
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceB", "ServiceB\ServiceB.csproj", "{50670870-0315-4D74-BC73-6C3D6194CF53}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7F3BF192-E2D2-46A5-ACA9-D54A41FA6C6C}"
+	ProjectSection(SolutionItems) = preProject
+		BuildAndUpdateVersion.proj = BuildAndUpdateVersion.proj
+		Web.Octopus.conf = Web.Octopus.conf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
