@@ -1,17 +1,154 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="BuildAndUpdateVersion">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Octopus">
   <PropertyGroup>
-    <Version>1.0.1.$(Build)</Version>
+    <Version>1.0.0.0</Version>
     <TeamCity Condition="'$(TeamCity)' == ''">false</TeamCity>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
-    <OutputPath Condition="'$(OutputPath)' == ''">bin\%Configuration%\</OutputPath>
+    <OutputPath Condition="'$(OutputPath)' == ''">bin\$(Configuration)\</OutputPath>
+    <WhatIf>false</WhatIf>
+    <IsNewRelease>false</IsNewRelease>
+    <VisualStudioVersion>14.0</VisualStudioVersion>    
+    <IsDefaultBranch Condition="'$(IsDefaultBranch)' == ''">false</IsDefaultBranch>
+    <OctopusToolsPath>packages\OctopusTools.4.5.2\tools\Octo.exe</OctopusToolsPath>
+    <MSBuildCommunityTasksPath>packages\MSBuildTasks.1.5.0.214\build\MSBuildTasks.targets</MSBuildCommunityTasksPath>
+    <NUnit3Path>nunit3-console.exe</NUnit3Path>
+    <TeamCityUrl></TeamCityUrl>
+    <BuildNumberSuffix>$(PackageSuffix)</BuildNumberSuffix>
+    <BuildNumberSuffix Condition="'$(IsDefaultBranch)' == 'true'">build.$(Build)</BuildNumberSuffix>
   </PropertyGroup>  
-  <PropertyGroup Condition="'$(BranchName)' == 'master'">
+  <PropertyGroup Condition="$(IsDefaultBranch)">
     <BranchName><!--NoAdditionalTags--></BranchName>
   </PropertyGroup>
-  <Target Name="BuildAndUpdateVersion">
-    <MSBuild Projects="CalculatorService.sln" 
-      Properties="OutputPath=$(OutputPath);Configuration=$(Configuration);" />
-    <TeamCitySetBuildNumber BuildNumber="$(Version)-$(BranchName)" Condition="'$(TeamCity)' == 'true' AND '$(BranchName)' != ''"/>
-    <TeamCitySetBuildNumber BuildNumber="$(Version)" Condition="'$(TeamCity)' == 'true' AND '$(BranchName)' == ''"/>
+  
+  <Import Project="$(MSBuildCommunityTasksPath)" Condition="Exists('$(MSBuildCommunityTasksPath)')" />
+
+  <Target Name="Octopus" BeforeTargets="EnsureNuGetPackageBuildImports" DependsOnTargets="BuildAndTest;DetectNewRelease;CreateNewRelease">
+  </Target>
+  
+  <Target Name="EnsureNuGetPackageBuildImports" Condition="$(TeamCity)">
+    <PropertyGroup>
+      <ErrorText>
+        This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them. 
+        For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.
+      </ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\MSBuildTasks.1.5.0.214\build\MSBuildTasks.targets')" 
+           Text="$([System.String]::Format('$(ErrorText)', 'packages\MSBuildTasks.1.5.0.214\build\MSBuildTasks.targets'))" />
+  </Target>
+  
+  <Target Name="BuildAndTest" DependsOnTargets="Build;RunTests">
+  </Target>
+
+  <Target Name="Build">
+    <MSBuild Projects="CalculatorService.sln"
+      Properties="OutputPath=$(OutputPath);Configuration=$(Configuration);" BuildInParallel="true"
+    />
+    <TeamCitySetBuildNumber BuildNumber="$(Version)-$(BuildNumberSuffix)" Condition="'$(TeamCity)' == 'true'"/>
+  </Target>
+
+  <Target Name="RunTests">
+    <ItemGroup>
+      <Tests Include="**\$(OutputPath)*Tests.dll" />
+    </ItemGroup>
+    <PropertyGroup>
+      <teamcityOpt Condition="$(TeamCity)">--teamcity</teamcityOpt>
+    </PropertyGroup>
+    <Exec IgnoreExitCode="True" Command="$(Nunit3Path) @(Tests) $(teamcityOpt)">
+      <Output TaskParameter="ExitCode" ItemName="exitCode" />
+    </Exec>
+    <Error Text="Error while running tests" Condition="@(exitCode) &lt; 0" />
+  </Target>
+
+  <Target Name="DetectNewRelease" DependsOnTargets="BranchBuildNumber;DefaultBranchBuildNumber" Condition="$(TeamCity) AND !$(IsNewRelease)">
+    <PropertyGroup>
+      <IsNewRelease Condition="('$(PreviousBuildNumber)' != '') AND !$(PreviousBuildNumber.Contains('$(Version)'))">true</IsNewRelease>
+    </PropertyGroup>
+    <Message Text="IsNewRelease: '$(IsNewRelease)'" />
+  </Target>
+
+  <Target Name="BranchBuildNumber" Condition="!$(IsDefaultBranch)">
+    <PropertyGroup>
+      <PreviousBuildsFile>PREV_VERSION.xml</PreviousBuildsFile>
+    </PropertyGroup>
+    <Message Text="Prevous develop build '$(PreviousBuildNumber)'" />
+    <MSBuild.Community.Tasks.Net.HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:BettingDataProviders),branch:$(BranchName),count:1&amp;fields=build(number)"
+                 Username="$(TCUserName)"
+                 Password="$(TCUserPassword)"
+                 WriteResponseTo="$(PreviousBuildsFile)"
+                 FailOnNon2xxResponse="true"/>
+    <PropertyGroup>
+      <PreviousBranchBuildNumber>$([System.IO.File]::ReadAllText('$(PreviousBuildsFile)'))</PreviousBranchBuildNumber>
+    </PropertyGroup>
+    <Message Text="Prevous branch build '$(PreviousBranchBuildNumber)'" />
+  </Target>
+
+  <Target Name="DefaultBranchBuildNumber" Condition="'$(PreviousBuildNumber)' == ''">
+    <PropertyGroup>
+      <PreviousBuildsFile>PREV_VERSION.xml</PreviousBuildsFile>
+    </PropertyGroup>
+    <MSBuild.Community.Tasks.Net.HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:BettingDataProviders),branch:develop,count:1&amp;fields=build(number)"
+                 Username="$(TCUserName)"
+                 Password="$(TCUserPassword)"
+                 WriteResponseTo="$(PreviousBuildsFile)"
+                 FailOnNon2xxResponse="true" />
+    <PropertyGroup>
+      <PreviousBuildNumber>$([System.IO.File]::ReadAllText('$(PreviousBuildsFile)'))</PreviousBuildNumber>
+    </PropertyGroup>
+    <Message Text="Prevous develop build '%(PreviousBuildNumber.build)'" />
+  </Target>
+
+  <Target Name="CreateNewRelease" BeforeTargets="EnsureOctopusToolsImports" Condition="'$(IsNewRelease)' == 'true'">
+    <ItemGroup>
+      <Projects Include="**\CalculatorService.csproj;**\ServiceA.csproj;**\ServiceB.csproj;" />
+    </ItemGroup>
+    <PropertyGroup>
+      <PackageSuffix>$(BranchName.Replace('-', '.')).build.$(Build)</PackageSuffix>
+      <PackageSuffix Condition="'$(IsDefaultBranch)' == 'true'"><!--NoAdditionalTags--></PackageSuffix>      
+    </PropertyGroup>
+    <Message Condition="$(WhatIf)" Text="Creating Packages For Projects: @(Projects)" />
+    <MSBuild Targets="OctoPack" Projects="@(Projects)" 
+      Properties="OutputPath=$(OutputPath);
+        Configuration=$(Configuration);
+        VisualStudioVersion=$(VisualStudioVersion);
+        RunOctoPack=true;
+        OctoPackAppendToVersion=$(PackageSuffix);
+        OctoPackPublishPackagesToTeamCity=false;
+        OctoPackPublishPackageToFileShare=$(PackagesFileShare)"             
+    />
+    <PropertyGroup>
+      <serverOpt>--server $(OctopusServer)</serverOpt>
+      <apiKeyOpt>--apiKey=$(ApiKey)</apiKeyOpt>
+      <serviceMessages Condition="$(TeamCity)">--enableServiceMessages</serviceMessages>
+      <PackageExistsExitCode>-7</PackageExistsExitCode>
+    </PropertyGroup>
+    <ItemGroup>
+      <Packages Include="**\$(OutputPath)*.nupkg" />
+    </ItemGroup>
+    <Message Condition="$(WhatIf)" Text="$(OctopusToolsPath) push --package @(Packages, ' --package ') $(serverOpt) $(apiKeyOpt) $(serviceMessages)" />
+    <Exec IgnoreExitCode="true" Command="$(OctopusToolsPath) push --package @(Packages, ' --package ') $(serverOpt) $(apiKeyOpt) $(serviceMessages)" Condition="!$(WhatIf)">
+      <Output TaskParameter="ExitCode" PropertyName="exitCode"/>
+    </Exec>
+    <Error Text="Error Pushing Packages To Octopus" Condition="$(exitCode) != $(PackageExistsExitCode) AND $(exitCode) &lt; 0" />
+    
+    <PropertyGroup>
+      <projectName>--project=TestProject</projectName>
+      <whatIfOpt Condition="$(WhatIf)">--whatif</whatIfOpt>
+      <release>--version $(Version)</release>
+      <release Condition="'$(PackageSuffix)' != ''">--version $(Version)-$(PackageSuffix)</release>
+      <channel Condition="$(IsDefaultBranch)">--channel FinalTesting</channel>
+      <channel Condition="!$(IsDefaultBranch)">--channel "Test in branch"</channel>
+      <ignorePackageExists>--ignoreexisting</ignorePackageExists>
+    </PropertyGroup>
+    <Exec Command="$(OctopusToolsPath) create-release $(release) $(channel) $(projectName) $(serverOpt) $(apiKeyOpt) $(serviceMessages) $(whatIfOpt) $(ignorePackageExists)" />
+  </Target>
+
+  <Target Name="EnsureOctopusToolsImports" Condition="$(IsNewRelease)">
+    <PropertyGroup>
+      <ErrorText>
+        This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them. 
+        For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.
+      </ErrorText>
+    </PropertyGroup>
+    <Error Condition="!$(OctopusToolsPath)')" 
+           Text="$([System.String]::Format('$(ErrorText)', '$(OctopusToolsPath)'))" />
   </Target>
 </Project>
