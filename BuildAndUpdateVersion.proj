@@ -85,7 +85,7 @@
     <PropertyGroup>
       <PreviousBuildsFile>PREV_VERSION.xml</PreviousBuildsFile>
     </PropertyGroup>
-    <HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:CalculatorForOctopus),branch:develop,count:1&amp;fields=build(number)"
+    <HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:CalculatorForOctopus),branch:$(BranchName),count:1&amp;fields=build(number)"
                  Username="$(TCUserName)"
                  Password="$(TCUserPassword)"
                  WriteResponseTo="$(PreviousBuildsFile)"
