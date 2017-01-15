@@ -9,7 +9,7 @@
     <VisualStudioVersion>14.0</VisualStudioVersion>    
     <IsDefaultBranch Condition="'$(IsDefaultBranch)' == ''">false</IsDefaultBranch>
     <OctopusToolsPath>packages\OctopusTools.4.5.2\tools\Octo.exe</OctopusToolsPath>
-    <MSBuildCommunityTasksPath>packages\MSBuildTasks.1.5.0.214\build\MSBuildTasks.targets</MSBuildCommunityTasksPath>
+    <MSBuildCommunityTasksPath>packages\MSBuildTasks.1.5.0.214\tools\MSBuild.Community.Tasks.Targets</MSBuildCommunityTasksPath>
     <NUnit3Path>nunit3-console.exe</NUnit3Path>
     <TeamCityUrl></TeamCityUrl>
     <BuildNumberSuffix>$(PackageSuffix)</BuildNumberSuffix>
@@ -42,7 +42,7 @@
     <MSBuild Projects="CalculatorService.sln"
       Properties="OutputPath=$(OutputPath);Configuration=$(Configuration);" BuildInParallel="true"
     />
-    <TeamCitySetBuildNumber BuildNumber="$(Version)-$(BuildNumberSuffix)" Condition="'$(TeamCity)' == 'true'"/>
+    <!--<TeamCitySetBuildNumber BuildNumber="$(Version)-$(BuildNumberSuffix)" Condition="'$(TeamCity)' == 'true'"/>-->
   </Target>
 
   <Target Name="RunTests">
