@@ -70,7 +70,7 @@
       <PreviousBuildsFile>PREV_VERSION.xml</PreviousBuildsFile>
     </PropertyGroup>
     <Message Text="Prevous develop build '$(PreviousBuildNumber)'" />
-    <MSBuild.Community.Tasks.Net.HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:BettingDataProviders),branch:$(BranchName),count:1&amp;fields=build(number)"
+    <HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:BettingDataProviders),branch:$(BranchName),count:1&amp;fields=build(number)"
                  Username="$(TCUserName)"
                  Password="$(TCUserPassword)"
                  WriteResponseTo="$(PreviousBuildsFile)"
@@ -85,7 +85,7 @@
     <PropertyGroup>
       <PreviousBuildsFile>PREV_VERSION.xml</PreviousBuildsFile>
     </PropertyGroup>
-    <MSBuild.Community.Tasks.Net.HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:BettingDataProviders),branch:develop,count:1&amp;fields=build(number)"
+    <HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:BettingDataProviders),branch:develop,count:1&amp;fields=build(number)"
                  Username="$(TCUserName)"
                  Password="$(TCUserPassword)"
                  WriteResponseTo="$(PreviousBuildsFile)"
