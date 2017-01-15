@@ -42,7 +42,7 @@
     <MSBuild Projects="CalculatorService.sln"
       Properties="OutputPath=$(OutputPath);Configuration=$(Configuration);" BuildInParallel="true"
     />
-    <!--<TeamCitySetBuildNumber BuildNumber="$(Version)-$(BuildNumberSuffix)" Condition="'$(TeamCity)' == 'true'"/>-->
+    <TeamCitySetBuildNumber BuildNumber="$(Version)-$(BuildNumberSuffix)" Condition="'$(TeamCity)' == 'true'"/>
   </Target>
 
   <Target Name="RunTests">
@@ -70,9 +70,9 @@
       <PreviousBuildsFile>PREV_VERSION.xml</PreviousBuildsFile>
     </PropertyGroup>
     <Message Text="Prevous develop build '$(PreviousBuildNumber)'" />
-    <HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:BettingDataProviders),branch:$(BranchName),count:1&amp;fields=build(number)"
-                 Username="$(TCUserName)"
-                 Password="$(TCUserPassword)"
+    <HttpRequest Url="$(teamcity.serverUrl)/httpAuth/app/rest/builds/?locator=project:(id:CalculatorForOctopus),branch:$(BranchName),count:1&amp;fields=build(number)"
+                 Username="$(teamcity.auth.userId)"
+                 Password="$(teamcity.auth.password)"
                  WriteResponseTo="$(PreviousBuildsFile)"
                  FailOnNon2xxResponse="true"/>
     <PropertyGroup>
@@ -85,9 +85,9 @@
     <PropertyGroup>
       <PreviousBuildsFile>PREV_VERSION.xml</PreviousBuildsFile>
     </PropertyGroup>
-    <HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:BettingDataProviders),branch:develop,count:1&amp;fields=build(number)"
-                 Username="$(TCUserName)"
-                 Password="$(TCUserPassword)"
+    <HttpRequest Url="$(teamcity.serverUrl)/httpAuth/app/rest/builds/?locator=project:(id:CalculatorForOctopus),branch:develop,count:1&amp;fields=build(number)"
+                 Username="$(teamcity.auth.userId)"
+                 Password="$(teamcity.auth.password)"
                  WriteResponseTo="$(PreviousBuildsFile)"
                  FailOnNon2xxResponse="true" />
     <PropertyGroup>
