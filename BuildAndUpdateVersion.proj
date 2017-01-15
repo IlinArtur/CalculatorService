@@ -70,9 +70,9 @@
       <PreviousBuildsFile>PREV_VERSION.xml</PreviousBuildsFile>
     </PropertyGroup>
     <Message Text="Prevous develop build '$(PreviousBuildNumber)'" />
-    <HttpRequest Url="$(teamcity_serverUrl)/httpAuth/app/rest/builds/?locator=project:(id:CalculatorForOctopus),branch:$(BranchName),count:1&amp;fields=build(number)"
-                 Username="$(teamcity_auth_userId)"
-                 Password="$(teamcity_auth_password)"
+    <HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:CalculatorForOctopus),branch:$(BranchName),count:1&amp;fields=build(number)"
+                 Username="$(TCUserName)"
+                 Password="$(TCUserPassword)"
                  WriteResponseTo="$(PreviousBuildsFile)"
                  FailOnNon2xxResponse="true"/>
     <PropertyGroup>
@@ -85,9 +85,9 @@
     <PropertyGroup>
       <PreviousBuildsFile>PREV_VERSION.xml</PreviousBuildsFile>
     </PropertyGroup>
-    <HttpRequest Url="$(teamcity_serverUrl)/httpAuth/app/rest/builds/?locator=project:(id:CalculatorForOctopus),branch:develop,count:1&amp;fields=build(number)"
-                 Username="$(teamcity_auth_userId)"
-                 Password="$(teamcity_auth_password)"
+    <HttpRequest Url="$(TeamCityUrl)/httpAuth/app/rest/builds/?locator=project:(id:CalculatorForOctopus),branch:develop,count:1&amp;fields=build(number)"
+                 Username="$(TCUserName)"
+                 Password="$(TCUserPassword)"
                  WriteResponseTo="$(PreviousBuildsFile)"
                  FailOnNon2xxResponse="true" />
     <PropertyGroup>
