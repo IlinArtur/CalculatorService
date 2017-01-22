@@ -14,7 +14,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7F3BF192-E2D2-46A5-ACA9-D54A41FA6C6C}"
 	ProjectSection(SolutionItems) = preProject
 		BuildAndUpdateVersion.proj = BuildAndUpdateVersion.proj
-		Web.Octopus.conf = Web.Octopus.conf
+		Web.Octopus.config = Web.Octopus.config
 	EndProjectSection
 EndProject
 Global
